@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Information Form</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+    background-color: #fafafa;
+  }
+
+  h2.section-title {
+    font-weight: bold;
+    background-color: #e6eff7;
+    padding: 10px;
+    border-radius: 3px;
+    color: #002b50;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    border: 1px solid #ccc;
+  }
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    vertical-align: top;
+  }
+
+  th {
+    background-color: #e6eff7;
+    text-align: left;
+    width: 35%;
+    font-weight: bold;
+    color: #002b50;
+  }
+
+  input[type="text"], 
+  input[type="number"], 
+  select, 
+  textarea {
+    width: 95%;
+    padding: 6px;
+    font-size: 14px;
+  }
+
+  textarea {
+    height: 60px;
+    resize: vertical;
+  }
+
+  .button-row {
+    text-align: center;
+    margin-top: 30px;
+  }
+
+  button {
+    background-color: #004a91;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #00366c;
+  }
+
+  .arm-row {
+    margin-bottom: 5px;
+  }
+</style>
+</head>
+<body>
+
+<!-- SECTION 1 -->
+<h2 class="section-title">1. Study Overview</h2>
+<table>
+  <tr><th>Protocol Title</th><td><input type="text" id="protocolTitle"></td></tr>
+  <tr><th>Indication / Therapeutic Area</th><td><input type="text" id="indication"></td></tr>
+  <tr><th>Phase</th>
+    <td>
+      <select id="phase">
+        <option value="">-- Select --</option>
+        <option>Phase I</option>
+        <option>Phase II</option>
+        <option>Phase III</option>
+        <option>Phase IV</option>
+      </select>
+    </td>
+  </tr>
+  <tr><th>Study Type</th>
+    <td>
+      <select id="studyType">
+        <option value="">-- Select --</option>
+        <option>Randomized</option>
+        <option>Open-label</option>
+        <option>Double-blind</option>
+        <option>Other</option>
+      </select>
+    </td>
+  </tr>
+  <tr><th>Product Type</th>
+    <td>
+      <select id="productType">
+        <option value="">-- Select --</option>
+        <option>Chemical drug</option>
+        <option>Biologic</option>
+        <option>Device</option>
+        <option>Diagnostic</option>
+        <option>Other</option>
+      </select>
+    </td>
+  </tr>
+  <tr><th>Countries / Regions Planned</th>
+    <td>
+      <select id="countries" multiple size="5">
+        <option>USA</option><option>Canada</option><option>UK</option><option>Germany</option>
+        <option>Japan</option><option>China</option><option>India</option><option>Brazil</option><option>Australia</option><option>Other</option>
+      </select>
+    </td>
+  </tr>
+  <tr><th>Estimated Sites</th><td><input type="number" id="sites"></td></tr>
+  <tr><th>Planned Enrollment</th><td><input type="number" id="enrollment"></td></tr>
+  <tr><th>Planned Duration (months)</th><td><input type="number" id="duration"></td></tr>
+</table>
+
+
+<!-- SECTION 2 -->
+<h2 class="section-title">2. Study Design & Objectives</h2>
+<table>
+  <tr><th>Primary Objective</th><td><textarea id="primaryObjective" placeholder="One sentence"></textarea></td></tr>
+  <tr><th>Secondary Objectives</th><td><textarea id="secondaryObjectives" placeholder="Optional"></textarea></td></tr>
+  <tr><th>Primary Endpoint</th><td><input type="text" id="primaryEndpoint"></td></tr>
+  <tr><th>Secondary Endpoints</th><td><input type="text" id="secondaryEndpoints" placeholder="Optional"></td></tr>
+  <tr><th>Study Design Type</th>
+    <td>
+      <select id="studyDesignType">
+        <option value="">-- Select --</option>
+        <option>Parallel</option>
+        <option>Crossover</option>
+        <option>Single-group</option>
+        <option>Factorial</option>
+        <option>Other</option>
+      </select>
+    </td>
+  </tr>
+  <tr><th>Treatment Arms</th>
+    <td id="armsContainer">
+      <div class="arm-row"><input type="text" name="arm" placeholder="Arm A"></div>
+      <button type="button" onclick="addArm()">+ Add Arm</button>
+    </td>
+  </tr>
+  <tr><th>Control Type</th>
+    <td>
+      <select id="controlType">
+        <option value="">-- Select --</option>
+        <option>Placebo</option>
+        <option>Active comparator</option>
+        <option>Historical control</option>
+        <option>No control</option>
+      </select>
+    </td>
+  </tr>
+  <tr><th>Key Inclusion Criteria</th><td><textarea id="inclusion" placeholder="• Bullet point list allowed"></textarea></td></tr>
+  <tr><th>Key Exclusion Criteria</th><td><textarea id="exclusion" placeholder="• Bullet point list allowed"></textarea></td></tr>
+  <tr><th>Dosing & Administration</th><td><input type="text" id="dosing"></td></tr>
+</table>
+
+
+<div class="button-row">
+  <button onclick="generatePDF()">Generate PDF</button>
+</div>
+
+
+<!-- JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  function addArm() {
+    const container = document.getElementById("armsContainer");
+    const newRow = document.createElement("div");
+    newRow.className = "arm-row";
+    const count = container.querySelectorAll("input[name='arm']").length + 1;
+    newRow.innerHTML = `<input type="text" name="arm" placeholder="Arm ${String.fromCharCode(64 + count)}">`;
+    container.insertBefore(newRow, container.lastElementChild);
+  }
+
+  function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let y = 10;
+    const lineHeight = 7;
+
+    function addLine(text) {
+      doc.text(text, 10, y);
+      y += lineHeight;
+    }
+
+    addLine("1. Study Overview");
+    addLine("Protocol Title: " + document.getElementById("protocolTitle").value);
+    addLine("Indication: " + document.getElementById("indication").value);
+    addLine("Phase: " + document.getElementById("phase").value);
+    addLine("Study Type: " + document.getElementById("studyType").value);
+    addLine("Product Type: " + document.getElementById("productType").value);
+
+    const countries = Array.from(document.getElementById("countries").selectedOptions).map(o => o.value).join(", ");
+    addLine("Countries / Regions: " + countries);
+    addLine("Estimated Sites: " + document.getElementById("sites").value);
+    addLine("Planned Enrollment: " + document.getElementById("enrollment").value);
+    addLine("Planned Duration (months): " + document.getElementById("duration").value);
+
+    addLine("");
+    addLine("2. Study Design & Objectives");
+    addLine("Primary Objective: " + document.getElementById("primaryObjective").value);
+    addLine("Secondary Objectives: " + document.getElementById("secondaryObjectives").value);
+    addLine("Primary Endpoint: " + document.getElementById("primaryEndpoint").value);
+    addLine("Secondary Endpoints: " + document.getElementById("secondaryEndpoints").value);
+    addLine("Study Design Type: " + document.getElementById("studyDesignType").value);
+    const arms = Array.from(document.getElementsByName("arm")).map(a => a.value).join(", ");
+    addLine("Treatment Arms: " + arms);
+    addLine("Control Type: " + document.getElementById("controlType").value);
+    addLine("Key Inclusion Criteria: " + document.getElementById("inclusion").value);
+    addLine("Key Exclusion Criteria: " + document.getElementById("exclusion").value);
+    addLine("Dosing & Administration: " + document.getElementById("dosing").value);
+
+    doc.save("study_info.pdf");
+  }
+</script>
+</body>
+</html>
+
