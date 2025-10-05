@@ -1,238 +1,515 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Study Information Form</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RFP Form — Study Info</title>
+
+<!-- jsPDF + html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 40px;
-    background-color: #fafafa;
+  :root {
+    --blue:#e6eff7;
+    --dark:#002b50;
+    --table-border:#cfcfcf;
+    --max-width:1100px;
   }
-
-  h2.section-title {
-    font-weight: bold;
-    background-color: #e6eff7;
-    padding: 10px;
-    border-radius: 3px;
-    color: #002b50;
+  body { font-family: Arial, sans-serif; background:#fafafa; margin:30px; color:#111; }
+  .container { max-width: var(--max-width); margin: auto; background: white; padding:22px 28px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+  h1 { text-align:center; margin-bottom:12px; color:var(--dark); }
+  h2.section-title { font-weight:700; background:var(--blue); padding:8px 12px; color:var(--dark); margin-top:24px; margin-bottom:8px; border-radius:3px; }
+  table { width:100%; border-collapse:collapse; margin-bottom:18px; border:1px solid var(--table-border); }
+  table thead th { background:var(--blue); color:var(--dark); font-weight:700; text-align:left; padding:10px; border:1px solid var(--table-border); }
+  table td, table th { padding:10px; border:1px solid var(--table-border); vertical-align:top; }
+  .label-col { width:32%; font-weight:700; background:var(--blue); color:var(--dark); }
+  input[type="text"], input[type="number"], input[type="email"], select, textarea, input[type="date"] {
+    width:96%; padding:7px; border:1px solid #cfcfcf; border-radius:3px; font-size:14px;
   }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 30px;
-    border: 1px solid #ccc;
-  }
-
-  th, td {
-    border: 1px solid #ccc;
-    padding: 10px;
-    vertical-align: top;
-  }
-
-  th {
-    background-color: #e6eff7;
-    text-align: left;
-    width: 35%;
-    font-weight: bold;
-    color: #002b50;
-  }
-
-  input[type="text"], 
-  input[type="number"], 
-  select, 
-  textarea {
-    width: 95%;
-    padding: 6px;
-    font-size: 14px;
-  }
-
-  textarea {
-    height: 60px;
-    resize: vertical;
-  }
-
-  .button-row {
-    text-align: center;
-    margin-top: 30px;
-  }
-
-  button {
-    background-color: #004a91;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  button:hover {
-    background-color: #00366c;
-  }
-
-  .arm-row {
-    margin-bottom: 5px;
-  }
+  textarea { min-height:72px; resize:vertical; }
+  .small { width:120px; }
+  .arms .arm-row { display:flex; gap:8px; margin-bottom:6px; }
+  .arms .arm-row input { flex:1; }
+  .btn { background:#004a91; color:white; border:none; padding:10px 14px; border-radius:4px; cursor:pointer; font-size:14px; }
+  .btn.secondary { background:#6c7a89; }
+  .inline { display:inline-block; vertical-align:middle; margin-right:8px; }
+  .choice-group label { margin-right:8px; }
+  .file-list { margin-top:8px; font-size:13px; color:#222; }
+  .responsibility-table td { text-align:center; }
+  .responsibility-table th.note { text-align:left; }
+  .center { text-align:center; }
+  .muted { color:#666; font-size:13px; }
+  .controls-row { display:flex; gap:12px; align-items:center; margin-top:12px; }
+  footer { margin-top:18px; font-size:13px; color:#666; text-align:right; }
 </style>
 </head>
 <body>
+<div class="container" id="formContainer">
+  <h1>Request for Proposal — Study Form</h1>
 
-<!-- SECTION 1 -->
-<h2 class="section-title">1. Study Overview</h2>
-<table>
-  <tr><th>Protocol Title</th><td><input type="text" id="protocolTitle"></td></tr>
-  <tr><th>Indication / Therapeutic Area</th><td><input type="text" id="indication"></td></tr>
-  <tr><th>Phase</th>
-    <td>
-      <select id="phase">
-        <option value="">-- Select --</option>
-        <option>Phase I</option>
-        <option>Phase II</option>
-        <option>Phase III</option>
-        <option>Phase IV</option>
+  <!-- SECTION 1 -->
+  <h2 class="section-title">1. Study Overview</h2>
+  <table>
+    <tr><td class="label-col">Protocol Title</td><td><input id="protocolTitle" type="text"></td></tr>
+    <tr><td class="label-col">Indication / Therapeutic Area</td><td><input id="indication" type="text"></td></tr>
+    <tr><td class="label-col">Phase</td><td>
+      <select id="phase"><option value="">-- Select --</option><option>Phase I</option><option>Phase II</option><option>Phase III</option><option>Phase IV</option></select>
+    </td></tr>
+    <tr><td class="label-col">Study Type</td><td>
+      <select id="studyType"><option value="">-- Select --</option><option>Randomized</option><option>Open-label</option><option>Double-blind</option><option>Other</option></select>
+    </td></tr>
+    <tr><td class="label-col">Product Type</td><td>
+      <select id="productType"><option value="">-- Select --</option><option>Chemical drug</option><option>Biologic</option><option>Device</option><option>Diagnostic</option><option>Other</option></select>
+    </td></tr>
+    <tr><td class="label-col">Countries / Regions Planned</td><td>
+      <select id="countries" multiple size="6">
+        <option>USA</option><option>Canada</option><option>UK</option><option>Germany</option><option>Japan</option><option>China</option>
+        <option>India</option><option>Brazil</option><option>Australia</option><option>Other</option>
       </select>
-    </td>
-  </tr>
-  <tr><th>Study Type</th>
-    <td>
-      <select id="studyType">
-        <option value="">-- Select --</option>
-        <option>Randomized</option>
-        <option>Open-label</option>
-        <option>Double-blind</option>
-        <option>Other</option>
-      </select>
-    </td>
-  </tr>
-  <tr><th>Product Type</th>
-    <td>
-      <select id="productType">
-        <option value="">-- Select --</option>
-        <option>Chemical drug</option>
-        <option>Biologic</option>
-        <option>Device</option>
-        <option>Diagnostic</option>
-        <option>Other</option>
-      </select>
-    </td>
-  </tr>
-  <tr><th>Countries / Regions Planned</th>
-    <td>
-      <select id="countries" multiple size="5">
-        <option>USA</option><option>Canada</option><option>UK</option><option>Germany</option>
-        <option>Japan</option><option>China</option><option>India</option><option>Brazil</option><option>Australia</option><option>Other</option>
-      </select>
-    </td>
-  </tr>
-  <tr><th>Estimated Sites</th><td><input type="number" id="sites"></td></tr>
-  <tr><th>Planned Enrollment</th><td><input type="number" id="enrollment"></td></tr>
-  <tr><th>Planned Duration (months)</th><td><input type="number" id="duration"></td></tr>
-</table>
+      <div class="muted">(Hold Ctrl/Cmd to multi-select)</div>
+    </td></tr>
+    <tr><td class="label-col">Estimated Sites</td><td><input id="sites" type="number" min="0"></td></tr>
+    <tr><td class="label-col">Planned Enrollment</td><td><input id="enrollment" type="number" min="0"></td></tr>
+    <tr><td class="label-col">Planned Duration (months)</td><td><input id="duration" type="number" min="0"></td></tr>
+  </table>
 
+  <!-- SECTION 2 -->
+  <h2 class="section-title">2. Study Design & Objectives</h2>
+  <table>
+    <tr><td class="label-col">Primary Objective</td><td><textarea id="primaryObjective" placeholder="One sentence"></textarea></td></tr>
+    <tr><td class="label-col">Secondary Objectives</td><td><textarea id="secondaryObjectives" placeholder="Optional"></textarea></td></tr>
+    <tr><td class="label-col">Primary Endpoint</td><td><input id="primaryEndpoint" type="text"></td></tr>
+    <tr><td class="label-col">Secondary Endpoints</td><td><input id="secondaryEndpoints" type="text" placeholder="Optional"></td></tr>
+    <tr><td class="label-col">Study Design Type</td><td>
+      <select id="studyDesignType"><option value="">-- Select --</option><option>Parallel</option><option>Crossover</option><option>Single-group</option><option>Factorial</option><option>Other</option></select>
+    </td></tr>
+    <tr><td class="label-col">Treatment Arms</td><td class="arms">
+      <div id="armsContainer">
+        <div class="arm-row"><input name="arm" placeholder="Arm A"></div>
+      </div>
+      <div class="controls-row">
+        <button type="button" class="btn secondary" id="addArmBtn">+ Add Arm</button>
+        <div class="muted">Use remove icon (✖) that appears next to arms to delete.</div>
+      </div>
+    </td></tr>
+    <tr><td class="label-col">Control Type</td><td>
+      <select id="controlType"><option value="">-- Select --</option><option>Placebo</option><option>Active comparator</option><option>Historical control</option><option>No control</option><option>Other</option></select>
+    </td></tr>
+    <tr><td class="label-col">Key Inclusion Criteria</td><td><textarea id="inclusion" placeholder="One bullet point per line"></textarea></td></tr>
+    <tr><td class="label-col">Key Exclusion Criteria</td><td><textarea id="exclusion" placeholder="One bullet point per line"></textarea></td></tr>
+    <tr><td class="label-col">Dosing & Administration</td><td><input id="dosing" type="text"></td></tr>
+  </table>
 
-<!-- SECTION 2 -->
-<h2 class="section-title">2. Study Design & Objectives</h2>
-<table>
-  <tr><th>Primary Objective</th><td><textarea id="primaryObjective" placeholder="One sentence"></textarea></td></tr>
-  <tr><th>Secondary Objectives</th><td><textarea id="secondaryObjectives" placeholder="Optional"></textarea></td></tr>
-  <tr><th>Primary Endpoint</th><td><input type="text" id="primaryEndpoint"></td></tr>
-  <tr><th>Secondary Endpoints</th><td><input type="text" id="secondaryEndpoints" placeholder="Optional"></td></tr>
-  <tr><th>Study Design Type</th>
-    <td>
-      <select id="studyDesignType">
-        <option value="">-- Select --</option>
-        <option>Parallel</option>
-        <option>Crossover</option>
-        <option>Single-group</option>
-        <option>Factorial</option>
-        <option>Other</option>
-      </select>
-    </td>
-  </tr>
-  <tr><th>Treatment Arms</th>
-    <td id="armsContainer">
-      <div class="arm-row"><input type="text" name="arm" placeholder="Arm A"></div>
-      <button type="button" onclick="addArm()">+ Add Arm</button>
-    </td>
-  </tr>
-  <tr><th>Control Type</th>
-    <td>
-      <select id="controlType">
-        <option value="">-- Select --</option>
-        <option>Placebo</option>
-        <option>Active comparator</option>
-        <option>Historical control</option>
-        <option>No control</option>
-      </select>
-    </td>
-  </tr>
-  <tr><th>Key Inclusion Criteria</th><td><textarea id="inclusion" placeholder="• Bullet point list allowed"></textarea></td></tr>
-  <tr><th>Key Exclusion Criteria</th><td><textarea id="exclusion" placeholder="• Bullet point list allowed"></textarea></td></tr>
-  <tr><th>Dosing & Administration</th><td><input type="text" id="dosing"></td></tr>
-</table>
+  <!-- SECTION 3 -->
+  <h2 class="section-title">3. CRO Service Scope (High-level – Tri-state)</h2>
+  <table id="scopeTable">
+    <thead>
+      <tr><th style="width:20%;">Category</th><th style="width:60%;">Service Item</th><th style="width:20%;">Choice</th></tr>
+    </thead>
+    <tbody>
+      <!-- Regulatory -->
+      <tr><td rowspan="4">Regulatory</td><td>Regulatory Strategy Consultation</td><td class="center">
+        <label><input type="radio" name="reg1" value="Yes"> Yes</label>
+        <label><input type="radio" name="reg1" value="No"> No</label>
+        <label><input type="radio" name="reg1" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>FDA Pre-IND / Type B / Type C Meeting Support</td><td class="center">
+        <label><input type="radio" name="reg2" value="Yes"> Yes</label>
+        <label><input type="radio" name="reg2" value="No"> No</label>
+        <label><input type="radio" name="reg2" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>IND / CTA Preparation & Submission</td><td class="center">
+        <label><input type="radio" name="reg3" value="Yes"> Yes</label>
+        <label><input type="radio" name="reg3" value="No"> No</label>
+        <label><input type="radio" name="reg3" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Protocol Development & Review Support</td><td class="center">
+        <label><input type="radio" name="reg4" value="Yes"> Yes</label>
+        <label><input type="radio" name="reg4" value="No"> No</label>
+        <label><input type="radio" name="reg4" value="N/A" checked> N/A</label>
+      </td></tr>
 
+      <!-- Start-Up -->
+      <tr><td rowspan="4">Start-Up</td><td>Feasibility & Site Selection</td><td class="center">
+        <label><input type="radio" name="su1" value="Yes"> Yes</label><label><input type="radio" name="su1" value="No"> No</label><label><input type="radio" name="su1" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Site Contracting & Budget Negotiation</td><td class="center">
+        <label><input type="radio" name="su2" value="Yes"> Yes</label><label><input type="radio" name="su2" value="No"> No</label><label><input type="radio" name="su2" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>EC/IRB Submissions</td><td class="center">
+        <label><input type="radio" name="su3" value="Yes"> Yes</label><label><input type="radio" name="su3" value="No"> No</label><label><input type="radio" name="su3" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Investigator Meeting & Site Training</td><td class="center">
+        <label><input type="radio" name="su4" value="Yes"> Yes</label><label><input type="radio" name="su4" value="No"> No</label><label><input type="radio" name="su4" value="N/A" checked> N/A</label>
+      </td></tr>
 
-<div class="button-row">
-  <button onclick="generatePDF()">Generate PDF</button>
+      <!-- Conduct -->
+      <tr><td rowspan="6">Conduct</td><td>Clinical Operations (Monitoring, Site Mgmt)</td><td class="center">
+        <label><input type="radio" name="co1" value="Yes"> Yes</label><label><input type="radio" name="co1" value="No"> No</label><label><input type="radio" name="co1" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Site Payments Management</td><td class="center">
+        <label><input type="radio" name="co2" value="Yes"> Yes</label><label><input type="radio" name="co2" value="No"> No</label><label><input type="radio" name="co2" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>IMP/Device Logistics – Import/Export</td><td class="center">
+        <label><input type="radio" name="co3" value="Yes"> Yes</label><label><input type="radio" name="co3" value="No"> No</label><label><input type="radio" name="co3" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Depot Management</td><td class="center">
+        <label><input type="radio" name="co4" value="Yes"> Yes</label><label><input type="radio" name="co4" value="No"> No</label><label><input type="radio" name="co4" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Cold Chain & Distribution</td><td class="center">
+        <label><input type="radio" name="co5" value="Yes"> Yes</label><label><input type="radio" name="co5" value="No"> No</label><label><input type="radio" name="co5" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Central Lab Services</td><td class="center">
+        <label><input type="radio" name="co6" value="Yes"> Yes</label><label><input type="radio" name="co6" value="No"> No</label><label><input type="radio" name="co6" value="N/A" checked> N/A</label>
+      </td></tr>
+
+      <!-- Data Mgmt -->
+      <tr><td rowspan="6">Data Mgmt</td><td>Imaging Services</td><td class="center">
+        <label><input type="radio" name="dm1" value="Yes"> Yes</label><label><input type="radio" name="dm1" value="No"> No</label><label><input type="radio" name="dm1" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Data Mgmt – EDC Setup & Validation</td><td class="center">
+        <label><input type="radio" name="dm2" value="Yes"> Yes</label><label><input type="radio" name="dm2" value="No"> No</label><label><input type="radio" name="dm2" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Data Mgmt – Data Entry & Query Resolution</td><td class="center">
+        <label><input type="radio" name="dm3" value="Yes"> Yes</label><label><input type="radio" name="dm3" value="No"> No</label><label><input type="radio" name="dm3" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Data Mgmt – Database Lock</td><td class="center">
+        <label><input type="radio" name="dm4" value="Yes"> Yes</label><label><input type="radio" name="dm4" value="No"> No</label><label><input type="radio" name="dm4" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Biostatistics & Programming</td><td class="center">
+        <label><input type="radio" name="dm5" value="Yes"> Yes</label><label><input type="radio" name="dm5" value="No"> No</label><label><input type="radio" name="dm5" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Pharmacovigilance (SAE, SUSAR, DSUR)</td><td class="center">
+        <label><input type="radio" name="dm6" value="Yes"> Yes</label><label><input type="radio" name="dm6" value="No"> No</label><label><input type="radio" name="dm6" value="N/A" checked> N/A</label>
+      </td></tr>
+
+      <!-- Medical Mgmt -->
+      <tr><td rowspan="4">Medical Mgmt</td><td>Eligibility Review</td><td class="center">
+        <label><input type="radio" name="mm1" value="Yes"> Yes</label><label><input type="radio" name="mm1" value="No"> No</label><label><input type="radio" name="mm1" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>24/7 Medical Support</td><td class="center">
+        <label><input type="radio" name="mm2" value="Yes"> Yes</label><label><input type="radio" name="mm2" value="No"> No</label><label><input type="radio" name="mm2" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Medical Monitoring</td><td class="center">
+        <label><input type="radio" name="mm3" value="Yes"> Yes</label><label><input type="radio" name="mm3" value="No"> No</label><label><input type="radio" name="mm3" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Medical Data Review</td><td class="center">
+        <label><input type="radio" name="mm4" value="Yes"> Yes</label><label><input type="radio" name="mm4" value="No"> No</label><label><input type="radio" name="mm4" value="N/A" checked> N/A</label>
+      </td></tr>
+
+      <!-- Reporting -->
+      <tr><td rowspan="4">Reporting</td><td>CSR – Medical Writing</td><td class="center">
+        <label><input type="radio" name="rp1" value="Yes"> Yes</label><label><input type="radio" name="rp1" value="No"> No</label><label><input type="radio" name="rp1" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Archiving & TMF Management</td><td class="center">
+        <label><input type="radio" name="rp2" value="Yes"> Yes</label><label><input type="radio" name="rp2" value="No"> No</label><label><input type="radio" name="rp2" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Study Close-Out Visits</td><td class="center">
+        <label><input type="radio" name="rp3" value="Yes"> Yes</label><label><input type="radio" name="rp3" value="No"> No</label><label><input type="radio" name="rp3" value="N/A" checked> N/A</label>
+      </td></tr>
+      <tr><td>Audit & Inspection Readiness</td><td class="center">
+        <label><input type="radio" name="rp4" value="Yes"> Yes</label><label><input type="radio" name="rp4" value="No"> No</label><label><input type="radio" name="rp4" value="N/A" checked> N/A</label>
+      </td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 4 -->
+  <h2 class="section-title">4. Sponsor Information</h2>
+  <table>
+    <tr><td class="label-col">Company Name</td><td><input id="sponsorCompany" type="text"></td></tr>
+    <tr><td class="label-col">Contact Person</td><td><input id="sponsorContact" type="text"></td></tr>
+    <tr><td class="label-col">Title / Function</td><td><input id="sponsorTitle" type="text"></td></tr>
+    <tr><td class="label-col">Email</td><td><input id="sponsorEmail" type="email"></td></tr>
+    <tr><td class="label-col">Phone</td><td><input id="sponsorPhone" type="text"></td></tr>
+    <tr><td class="label-col">Preferred Communication</td><td>
+      <select id="preferredComm"><option value="">-- Select --</option><option>Email</option><option>Phone</option><option>Other</option></select>
+    </td></tr>
+  </table>
+
+  <!-- SECTION 5 -->
+  <h2 class="section-title">5. Study Timeline (Execution)</h2>
+  <table>
+    <tr><th class="label-col">Milestone</th><th>Target Date</th><th>Notes</th></tr>
+    <tr><td>CRO Start Date</td><td><input id="tl_cro_start" type="date"></td><td><input id="tl_cro_start_notes" type="text"></td></tr>
+    <tr><td>Protocol Finalization</td><td><input id="tl_protocol_final" type="date"></td><td><input id="tl_protocol_final_notes" type="text"></td></tr>
+    <tr><td>First Patient In (FPI)</td><td><input id="tl_fpi" type="date"></td><td><input id="tl_fpi_notes" type="text"></td></tr>
+    <tr><td>Last Patient In (LPI)</td><td><input id="tl_lpi" type="date"></td><td><input id="tl_lpi_notes" type="text"></td></tr>
+    <tr><td>Database Lock (DBL)</td><td><input id="tl_dbl" type="date"></td><td><input id="tl_dbl_notes" type="text"></td></tr>
+  </table>
+
+  <!-- SECTION 6 -->
+  <h2 class="section-title">6. Responsibility Table (Detailed Breakdown)</h2>
+  <p class="muted">For each function/task, check the responsible party (Sponsor / CRO / Third Party). Add notes as needed.</p>
+  <table class="responsibility-table">
+    <thead>
+      <tr><th style="width:36%;">Function / Task</th><th style="width:14%;">Sponsor</th><th style="width:14%;">CRO</th><th style="width:14%;">Third Party</th><th class="note" style="width:22%;">Notes</th></tr>
+    </thead>
+    <tbody id="responsibilityBody">
+      <!-- We'll populate tasks matching Section 3 items -->
+    </tbody>
+  </table>
+
+  <!-- SECTION 7 -->
+  <h2 class="section-title">7. RFP Timeline</h2>
+  <table>
+    <tr><th class="label-col">Milestone</th><th>Target Date</th><th>Notes</th></tr>
+    <tr><td>RFP Available Date</td><td><input id="rfp_available" type="date"></td><td><input id="rfp_available_notes" type="text"></td></tr>
+    <tr><td>CRO Confirmation to Participate</td><td><input id="rfp_confirm" type="date"></td><td><input id="rfp_confirm_notes" type="text"></td></tr>
+    <tr><td>Inquiry / Q&A Period (From – To)</td><td><input id="rfp_qa_from" type="date"> to <input id="rfp_qa_to" type="date"></td><td><input id="rfp_qa_notes" type="text"></td></tr>
+    <tr><td>Proposal Delivery Date</td><td><input id="rfp_proposal" type="date"></td><td><input id="rfp_proposal_notes" type="text"></td></tr>
+    <tr><td>Bid Defense Meeting (BDM)</td><td><input id="rfp_bdm" type="date"></td><td><input id="rfp_bdm_notes" type="text"></td></tr>
+    <tr><td>Decision / Award Date</td><td><input id="rfp_decision" type="date"></td><td><input id="rfp_decision_notes" type="text"></td></tr>
+    <tr><td>Contract Execution Date</td><td><input id="rfp_contract" type="date"></td><td><input id="rfp_contract_notes" type="text"></td></tr>
+  </table>
+
+  <!-- SECTION 8 -->
+  <h2 class="section-title">8. Submission Instructions</h2>
+  <p>Submission Format: Proposal should be submitted in both editable (Word/Excel) and PDF formats.</p>
+  <p>Submission Method: Please submit via email to <strong>rfp@sponsor.com</strong> with subject line: <em>[Study ID] – CRO Proposal Submission</em></p>
+  <p class="muted">Refer to Section 7 for Proposal Delivery Date and other timeline items. All inquiries must be submitted in writing during the Q&A period.</p>
+
+  <!-- SECTION 9 -->
+  <h2 class="section-title">9. Additional Information</h2>
+  <table>
+    <tr><td class="label-col">Special Requirements / Considerations</td><td><textarea id="specialReq"></textarea></td></tr>
+    <tr><td class="label-col">Additional Comments</td><td><textarea id="additionalComments"></textarea></td></tr>
+    <tr><td class="label-col">Attachments (if any)</td>
+      <td>
+        <input id="attachments" type="file" multiple>
+        <div id="fileList" class="file-list"></div>
+      </td></tr>
+  </table>
+
+  <div class="center">
+    <button class="btn" id="generateBtn">Generate PDF</button>
+  </div>
+
+  <footer>Confidential</footer>
 </div>
 
-
-<!-- JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-  function addArm() {
-    const container = document.getElementById("armsContainer");
-    const newRow = document.createElement("div");
-    newRow.className = "arm-row";
-    const count = container.querySelectorAll("input[name='arm']").length + 1;
-    newRow.innerHTML = `<input type="text" name="arm" placeholder="Arm ${String.fromCharCode(64 + count)}">`;
-    container.insertBefore(newRow, container.lastElementChild);
-  }
+/* ---------- Dynamic UI behaviors ---------- */
 
-  function generatePDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    let y = 10;
-    const lineHeight = 7;
+// Add Arm logic (with remove)
+document.getElementById('addArmBtn').addEventListener('click', () => addArm());
+function addArm(){
+  const container = document.getElementById('armsContainer');
+  const count = container.querySelectorAll('input[name="arm"]').length + 1;
+  const row = document.createElement('div');
+  row.className = 'arm-row';
+  row.innerHTML = `<input name="arm" placeholder="Arm ${String.fromCharCode(64+count)}">
+                   <button type="button" class="btn secondary" style="padding:6px 8px">✖</button>`;
+  container.appendChild(row);
+  row.querySelector('button').addEventListener('click', () => row.remove());
+}
 
-    function addLine(text) {
-      doc.text(text, 10, y);
-      y += lineHeight;
+// File list preview
+const attachments = document.getElementById('attachments');
+const fileList = document.getElementById('fileList');
+attachments.addEventListener('change', () => {
+  const files = Array.from(attachments.files);
+  if(!files.length){ fileList.textContent = ''; return; }
+  fileList.innerHTML = files.map(f => `<div>${f.name} (${Math.round(f.size/1024)} KB)</div>`).join('');
+});
+
+/* ---------- Build Responsibility table from Section 3 entries ---------- */
+const tasks = [
+  // from Section 3 in order
+  'Regulatory Strategy Consultation',
+  'FDA Pre-IND / Type B / Type C Meeting Support',
+  'IND / CTA Preparation & Submission',
+  'Protocol Development & Review Support',
+  'Feasibility & Site Selection',
+  'Site Contracting & Budget Negotiation',
+  'EC/IRB Submissions',
+  'Investigator Meeting & Site Training',
+  'Clinical Operations (Monitoring, Site Mgmt)',
+  'Site Payments Management',
+  'IMP/Device Logistics – Import/Export',
+  'Depot Management',
+  'Cold Chain & Distribution',
+  'Central Lab Services',
+  'Imaging Services',
+  'Data Mgmt – EDC Setup & Validation',
+  'Data Mgmt – Data Entry & Query Resolution',
+  'Data Mgmt – Database Lock',
+  'Biostatistics & Programming',
+  'Pharmacovigilance (SAE, SUSAR, DSUR)',
+  'Eligibility Review',
+  '24/7 Medical Support',
+  'Medical Monitoring',
+  'Medical Data Review',
+  'CSR – Medical Writing',
+  'Archiving & TMF Management',
+  'Study Close-Out Visits',
+  'Audit & Inspection Readiness'
+];
+
+const tbody = document.getElementById('responsibilityBody');
+tasks.forEach((t, idx) => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td style="text-align:left">${t}</td>
+                  <td><input type="checkbox" name="resp_${idx}_sponsor"></td>
+                  <td><input type="checkbox" name="resp_${idx}_cro"></td>
+                  <td><input type="checkbox" name="resp_${idx}_third"></td>
+                  <td><input type="text" name="resp_${idx}_notes" style="width:96%"></td>`;
+  tbody.appendChild(tr);
+});
+
+/* ---------- PDF generation: render structured multi-page replica ---------- */
+
+document.getElementById('generateBtn').addEventListener('click', async function() {
+  // Build a printable clone that replaces inputs with plain text/checked states
+  const printable = buildPrintable();
+  // Use jsPDF.html (via html2canvas) to render the node to PDF with paging
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+
+  // styling adjustments to better fit PDF page width
+  const opts = {
+    callback: function (doc) {
+      doc.save('RFP_Form.pdf');
+      printable.remove(); // cleanup
+    },
+    margin: [20, 20, 20, 20],
+    html2canvas: { scale: 1.15, useCORS: true }
+  };
+
+  await doc.html(printable, opts);
+});
+
+/* Build printable DOM by cloning and converting form controls to text / visuals */
+function buildPrintable(){
+  // clone container
+  const original = document.getElementById('formContainer');
+  const clone = original.cloneNode(true);
+  clone.style.boxShadow = 'none';
+  clone.style.margin = '10px';
+  clone.style.padding = '10px';
+  clone.id = 'printableClone';
+  // Replace inputs/selects/textareas with text nodes
+  const inputs = clone.querySelectorAll('input, select, textarea, button, .btn, .secondary, #attachments, #addArmBtn, #generateBtn');
+  inputs.forEach(el => {
+    if (el.tagName === 'BUTTON') el.remove();
+    else if (el.type === 'radio') {
+      // keep the selected radio as text in the parent cell
+      const name = el.name;
+      // handled below in parent group
+    } else if (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') {
+      const val = getFormValueById(el.id, el);
+      const span = document.createElement('div');
+      span.style.padding = '4px 2px';
+      span.style.minHeight = '16px';
+      span.textContent = val;
+      el.parentNode.replaceChild(span, el);
     }
+  });
 
-    addLine("1. Study Overview");
-    addLine("Protocol Title: " + document.getElementById("protocolTitle").value);
-    addLine("Indication: " + document.getElementById("indication").value);
-    addLine("Phase: " + document.getElementById("phase").value);
-    addLine("Study Type: " + document.getElementById("studyType").value);
-    addLine("Product Type: " + document.getElementById("productType").value);
-
-    const countries = Array.from(document.getElementById("countries").selectedOptions).map(o => o.value).join(", ");
-    addLine("Countries / Regions: " + countries);
-    addLine("Estimated Sites: " + document.getElementById("sites").value);
-    addLine("Planned Enrollment: " + document.getElementById("enrollment").value);
-    addLine("Planned Duration (months): " + document.getElementById("duration").value);
-
-    addLine("");
-    addLine("2. Study Design & Objectives");
-    addLine("Primary Objective: " + document.getElementById("primaryObjective").value);
-    addLine("Secondary Objectives: " + document.getElementById("secondaryObjectives").value);
-    addLine("Primary Endpoint: " + document.getElementById("primaryEndpoint").value);
-    addLine("Secondary Endpoints: " + document.getElementById("secondaryEndpoints").value);
-    addLine("Study Design Type: " + document.getElementById("studyDesignType").value);
-    const arms = Array.from(document.getElementsByName("arm")).map(a => a.value).join(", ");
-    addLine("Treatment Arms: " + arms);
-    addLine("Control Type: " + document.getElementById("controlType").value);
-    addLine("Key Inclusion Criteria: " + document.getElementById("inclusion").value);
-    addLine("Key Exclusion Criteria: " + document.getElementById("exclusion").value);
-    addLine("Dosing & Administration: " + document.getElementById("dosing").value);
-
-    doc.save("study_info.pdf");
+  // Handle radio groups in section 3: convert each choice cell to text summary
+  const radioGroups = {};
+  clone.querySelectorAll('input[type="radio"]').forEach(r=>{
+    const name = r.name;
+    if (!radioGroups[name]) radioGroups[name] = [];
+    radioGroups[name].push(r);
+  });
+  for (const [name, radios] of Object.entries(radioGroups)){
+    // find selected by reading original form
+    const selected = document.querySelector(`input[name="${name}"]:checked`);
+    const val = selected ? selected.value : 'N/A';
+    // find the first radio's parent cell in clone
+    const r0 = radios[0];
+    const parentCell = r0 && r0.parentNode;
+    if (parentCell) {
+      // replace parent cell contents with text
+      const textDiv = document.createElement('div');
+      textDiv.style.padding = '4px';
+      textDiv.textContent = val;
+      parentCell.parentNode.replaceChild(textDiv, parentCell);
+    } else {
+      // fallback: find anywhere
+    }
   }
+
+  // Convert the treatment arms list to text
+  const armsOriginal = Array.from(document.querySelectorAll('input[name="arm"]')).map(i => i.value).filter(Boolean);
+  const armsCloneContainer = clone.querySelector('#armsContainer');
+  if (armsCloneContainer){
+    armsCloneContainer.innerHTML = '';
+    if (armsOriginal.length){
+      armsOriginal.forEach(a => {
+        const d = document.createElement('div'); d.textContent = a; d.style.padding='2px 0';
+        armsCloneContainer.appendChild(d);
+      });
+    } else {
+      armsCloneContainer.textContent = '';
+    }
+  }
+
+  // Replace countries multi-select with comma list
+  const countriesSelected = Array.from(document.getElementById('countries').selectedOptions).map(o=>o.value).join(', ');
+  const cloneCountries = clone.querySelector('#countries');
+  if (cloneCountries) cloneCountries.parentNode.replaceChild(Object.assign(document.createElement('div'), { textContent: countriesSelected || '' }), cloneCountries);
+
+  // Responsibility table: convert checkboxes to labels (S / C / T)
+  const respRows = clone.querySelectorAll('#responsibilityBody tr');
+  respRows.forEach((row, idx) => {
+    const origSponsor = document.querySelector(`input[name="resp_${idx}_sponsor"]`);
+    const origCro = document.querySelector(`input[name="resp_${idx}_cro"]`);
+    const origThird = document.querySelector(`input[name="resp_${idx}_third"]`);
+    const selected = [];
+    if (origSponsor && origSponsor.checked) selected.push('Sponsor');
+    if (origCro && origCro.checked) selected.push('CRO');
+    if (origThird && origThird.checked) selected.push('Third Party');
+    // replace second/third/fourth cells with text
+    const cells = row.querySelectorAll('td');
+    if (cells.length >= 4) {
+      cells[1].textContent = (origSponsor && origSponsor.checked) ? '✓' : '';
+      cells[2].textContent = (origCro && origCro.checked) ? '✓' : '';
+      cells[3].textContent = (origThird && origThird.checked) ? '✓' : '';
+      // notes: copy original notes value
+      const origNotes = document.querySelector(`input[name="resp_${idx}_notes"]`);
+      cells[4].textContent = origNotes ? origNotes.value : '';
+    }
+  });
+
+  // Attachments: list filenames
+  const fileListDiv = clone.querySelector('#fileList');
+  if (fileListDiv) {
+    const files = Array.from(attachments.files || []);
+    fileListDiv.innerHTML = files.length ? files.map(f => `${f.name} (${Math.round(f.size/1024)} KB)`).join('\n') : '';
+  }
+
+  // remove any interactive controls left
+  clone.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(n => n.remove());
+
+  // hide buttons
+  clone.querySelectorAll('button, .btn').forEach(b => b.remove());
+
+  // place offscreen for rendering
+  clone.style.width = '780px'; // pdf-friendly width
+  clone.style.margin = '10px auto';
+  clone.style.background = '#fff';
+  clone.style.padding = '10px';
+  document.body.appendChild(clone);
+  return clone;
+}
+
+/* helper to read value by id fallback to element value */
+function getFormValueById(id, el){
+  if (!id) {
+    // fallback for unnamed inputs: try to use current element's value
+    return (el && el.value) ? el.value : '';
+  }
+  const orig = document.getElementById(id);
+  if (!orig) return '';
+  if (orig.tagName === 'SELECT') {
+    if (orig.multiple) return Array.from(orig.selectedOptions).map(o=>o.value).join(', ');
+    return orig.options[orig.selectedIndex] ? orig.options[orig.selectedIndex].value : '';
+  }
+  if (orig.type === 'file') return Array.from(orig.files || []).map(f=>f.name).join(', ');
+  return orig.value || '';
+}
 </script>
 </body>
 </html>
-
